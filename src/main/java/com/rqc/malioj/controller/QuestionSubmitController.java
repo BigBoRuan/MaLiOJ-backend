@@ -1,11 +1,19 @@
 package com.rqc.malioj.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rqc.malioj.annotation.AuthCheck;
 import com.rqc.malioj.common.BaseResponse;
 import com.rqc.malioj.common.ErrorCode;
 import com.rqc.malioj.common.ResultUtils;
+import com.rqc.malioj.constant.UserConstant;
 import com.rqc.malioj.exception.BusinessException;
+import com.rqc.malioj.model.dto.question.QuestionQueryRequest;
 import com.rqc.malioj.model.dto.questionsubmit.QuestionSubmitAddRequest;
+import com.rqc.malioj.model.dto.questionsubmit.QuestionSubmitQueryRequest;
+import com.rqc.malioj.model.entity.Question;
+import com.rqc.malioj.model.entity.QuestionSubmit;
 import com.rqc.malioj.model.entity.User;
+import com.rqc.malioj.model.vo.QuestionSubmitVO;
 import com.rqc.malioj.service.QuestionSubmitService;
 import com.rqc.malioj.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +51,7 @@ public class QuestionSubmitController {
      */
     @PostMapping("/")
     public BaseResponse<Long> doQuestionSubmit(@RequestBody QuestionSubmitAddRequest questionSubmitAddRequest,
-            HttpServletRequest request) {
+                                               HttpServletRequest request) {
         if (questionSubmitAddRequest == null || questionSubmitAddRequest.getQuestionId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -52,6 +60,24 @@ public class QuestionSubmitController {
         long questionId = questionSubmitAddRequest.getQuestionId();
         Long questionSubmitId = questionSubmitService.doQuestionSubmit(questionSubmitAddRequest, loginUser);
         return ResultUtils.success(questionSubmitId);
+    }
+
+    /**
+     * 分页获取题目提交列表 除了管理员之外，普通用户只能看到答案 提交代码等公开信息
+     * @param questionSubmitQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/page")
+    public BaseResponse<Page<QuestionSubmitVO>> listQuestionSubmitByPage(@RequestBody QuestionSubmitQueryRequest questionSubmitQueryRequest,
+                                                                         HttpServletRequest request) {
+        long current = questionSubmitQueryRequest.getCurrent();
+        long size = questionSubmitQueryRequest.getPageSize();
+        // 得到原始数据
+        Page<QuestionSubmit> questionSubmitPage = questionSubmitService.page(new Page<>(current, size),
+                questionSubmitService.getQueryWrapper(questionSubmitQueryRequest));
+        final User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(questionSubmitService.getQuestionSubmitVOPage(questionSubmitPage,loginUser));
     }
 
 }

@@ -10,10 +10,7 @@ import com.rqc.malioj.common.ResultUtils;
 import com.rqc.malioj.constant.UserConstant;
 import com.rqc.malioj.exception.BusinessException;
 import com.rqc.malioj.exception.ThrowUtils;
-import com.rqc.malioj.model.dto.question.QuestionAddRequest;
-import com.rqc.malioj.model.dto.question.QuestionEditRequest;
-import com.rqc.malioj.model.dto.question.QuestionQueryRequest;
-import com.rqc.malioj.model.dto.question.QuestionUpdateRequest;
+import com.rqc.malioj.model.dto.question.*;
 import com.rqc.malioj.model.entity.Question;
 import com.rqc.malioj.model.entity.User;
 import com.rqc.malioj.model.vo.QuestionVO;
@@ -64,6 +61,15 @@ public class QuestionController {
         if (tags != null) {
             question.setTags(JSONUtil.toJsonStr(tags));
         }
+        List<JudgeCase> judgeCase = questionAddRequest.getJudgeCase();
+        if (judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
+        }
+        JudgeConfig judgeConfig = questionAddRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
+        }
+
         questionService.validQuestion(question, true);
         User loginUser = userService.getLoginUser(request);
         question.setUserId(loginUser.getId());
@@ -117,6 +123,15 @@ public class QuestionController {
         List<String> tags = questionUpdateRequest.getTags();
         if (tags != null) {
             question.setTags(JSONUtil.toJsonStr(tags));
+        }
+
+        List<JudgeCase> judgeCase = questionUpdateRequest.getJudgeCase();
+        if (judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
+        }
+        JudgeConfig judgeConfig = questionUpdateRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
         // 参数校验
         questionService.validQuestion(question, false);
